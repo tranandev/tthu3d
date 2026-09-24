@@ -1,0 +1,395 @@
+:root {
+  color-scheme: dark;
+  --gold: #ffd76a;
+  --pink: #ff9ebb;
+  --panel: rgba(18, 9, 29, 0.97);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #030208;
+  font-family: ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, -apple-system, sans-serif;
+  overscroll-behavior: none;
+}
+
+body {
+  position: fixed;
+  inset: 0;
+  touch-action: none;
+}
+
+button {
+  font: inherit;
+}
+
+#webgl-container {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+}
+
+#webgl-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+.top-bar {
+  position: fixed;
+  top: calc(12px + var(--safe-top));
+  right: calc(12px + var(--safe-right));
+  z-index: 10;
+  display: flex;
+  gap: 10px;
+}
+
+.icon-btn,
+.close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: var(--gold);
+  background: rgba(255, 255, 255, 0.11);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.icon-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.icon-btn:active,
+.close-btn:active {
+  transform: scale(0.92);
+  background: rgba(255, 215, 106, 0.22);
+}
+
+.icon-btn.is-playing {
+  color: #fff4bf;
+  background: rgba(255, 215, 106, 0.2);
+  box-shadow: 0 0 0 1px rgba(255, 215, 106, 0.18), 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+.icon {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.click-hint {
+  position: fixed;
+  left: 50%;
+  bottom: calc(18px + var(--safe-bottom));
+  z-index: 5;
+  width: min(90vw, 480px);
+  transform: translateX(-50%);
+  color: rgba(255, 240, 218, 0.82);
+  font-size: clamp(12px, 3.2vw, 14px);
+  line-height: 1.35;
+  letter-spacing: 0.05em;
+  text-align: center;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95);
+  pointer-events: none;
+  animation: pulseHint 2s ease-in-out infinite alternate;
+}
+
+.wish-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding:
+    max(10px, var(--safe-top))
+    max(10px, var(--safe-right))
+    max(10px, var(--safe-bottom))
+    max(10px, var(--safe-left));
+  background: rgba(0, 0, 0, 0.72);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 240ms ease, visibility 240ms ease;
+  touch-action: pan-y;
+}
+
+.wish-modal.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.wish-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(94vw, 430px);
+  max-height: min(94dvh, 860px);
+  padding: 20px 16px 18px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  touch-action: pan-y;
+  text-align: center;
+  color: #fff;
+  background: linear-gradient(145deg, rgba(39, 17, 51, 0.98), var(--panel));
+  border: 1px solid rgba(255, 215, 106, 0.46);
+  border-radius: 22px;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55), 0 0 32px rgba(255, 167, 196, 0.18);
+  transform: translateY(16px) scale(0.97);
+  transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.wish-modal.active .wish-card {
+  transform: translateY(0) scale(1);
+}
+
+.wish-card::-webkit-scrollbar {
+  display: none;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.wish-card h3 {
+  width: calc(100% - 64px);
+  margin: 2px 32px 10px;
+  color: var(--gold);
+  font-family: "Segoe Print", "Bradley Hand", cursive;
+  font-size: clamp(23px, 6.5vw, 30px);
+  font-weight: 700;
+  line-height: 1.2;
+  text-shadow: 0 0 10px rgba(255, 215, 106, 0.4);
+}
+
+.wish-image-container {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(100%, 350px);
+  aspect-ratio: 9 / 16;
+  min-height: 0;
+  overflow: hidden;
+  flex: 0 0 auto;
+  margin: 2px 0 12px;
+  background: radial-gradient(circle at 50% 35%, #291e37 0%, #09070d 72%);
+  border: 1px solid rgba(255, 215, 106, 0.34);
+  border-radius: 16px;
+  box-shadow: 0 5px 22px rgba(0, 0, 0, 0.48);
+}
+
+.wish-image-container img {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 1;
+  -webkit-user-drag: none;
+  user-select: none;
+  transition: opacity 180ms ease;
+}
+
+.wish-image-container.has-error::after {
+  content: "Không tải được ảnh";
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: rgba(255, 240, 218, 0.78);
+  font-size: 13px;
+}
+
+.wish-image-container.is-loading img {
+  opacity: 0;
+}
+
+.image-loader {
+  position: absolute;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  border: 3px solid rgba(255, 255, 255, 0.14);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.wish-image-container.is-loading .image-loader {
+  opacity: 1;
+}
+
+.wish-card p {
+  width: 100%;
+  margin-bottom: 10px;
+  color: #f4ecff;
+  font-size: clamp(13px, 3.7vw, 15px);
+  font-style: italic;
+  line-height: 1.5;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.wish-card .tag {
+  color: var(--pink);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+@keyframes pulseHint {
+  from { opacity: 0.42; }
+  to { opacity: 0.96; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 520px) {
+  .wish-card {
+    width: min(96vw, 430px);
+    padding: 16px 12px 14px;
+    border-radius: 18px;
+  }
+
+  .wish-image-container {
+    width: min(100%, 350px);
+    border-radius: 14px;
+  }
+
+  .wish-card h3 {
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-height: 690px) and (orientation: portrait) {
+  .wish-card {
+    max-height: 96dvh;
+    padding-top: 12px;
+  }
+
+  .wish-card h3 {
+    margin-bottom: 6px;
+    font-size: 22px;
+  }
+
+  .wish-image-container {
+    width: min(82vw, 280px);
+    margin-bottom: 8px;
+  }
+
+  .wish-card p {
+    margin-bottom: 6px;
+    font-size: 12.5px;
+    line-height: 1.4;
+  }
+
+  .wish-card .tag {
+    display: none;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 620px) {
+  .wish-card {
+    display: grid;
+    grid-template-columns: minmax(180px, 40%) 1fr;
+    grid-template-areas:
+      "image title"
+      "image text"
+      "image tag";
+    gap: 8px 18px;
+    align-items: center;
+    width: min(92vw, 780px);
+    max-height: 92dvh;
+    padding: 12px 16px;
+    overflow: hidden;
+  }
+
+  .wish-card h3 {
+    grid-area: title;
+    width: calc(100% - 28px);
+    margin: 0 28px 0 0;
+    font-size: 23px;
+  }
+
+  .wish-image-container {
+    grid-area: image;
+    width: auto;
+    height: min(84dvh, 520px);
+    aspect-ratio: 9 / 16;
+    justify-self: center;
+    margin: 0;
+  }
+
+  .wish-card p {
+    grid-area: text;
+    margin: 0;
+  }
+
+  .wish-card .tag {
+    grid-area: tag;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .click-hint,
+  .image-loader {
+    animation: none;
+  }
+
+  .wish-modal,
+  .wish-card,
+  .wish-image-container img {
+    transition-duration: 0.01ms;
+  }
+}
